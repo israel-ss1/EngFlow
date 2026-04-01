@@ -2,6 +2,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from threading import Lock
+import streamlit as st # Importante para ler as credenciais
 
 class DatabaseConnection:
     _instance = None
@@ -22,36 +23,44 @@ class DatabaseConnection:
         self.engine = None
         self.Session = None
         
-        user = 'sa'
-        pwd = 'admin123'
-        server = 'DESKTOP-LO3B79V'
-        db = 'EngFlow'
-        # Adicionado TrustServerCertificate=yes para evitar erros de SSL locais
-        driver = 'ODBC+Driver+17+for+SQL+Server'
-
-        # URL com parametros de seguranca para conexao local
-        connection_url = f"mssql+pyodbc://{user}:{pwd}@{server}/{db}?driver={driver}&TrustServerCertificate=yes"
-
         try:
+            # Buscando as credenciais do .streamlit/secrets.toml
+            # Certifique-se de que o nome no TOML seja [connections.postgresql]
+            creds = st.secrets["connections"]["postgresql"]
+            
+            user = creds["username"]     # No Supabase geralmente é 'postgres'
+            pwd = creds["password"]      # Sua senha do banco
+            host = creds["host"]        # Algo como db.xxxx.supabase.co
+            port = creds["port"]        # Geralmente 5432
+            db = creds["database"]      # No Supabase é sempre 'postgres'
+
+            # Nova URL para PostgreSQL
+            # Usamos o driver padrão do Postgres (psycopg2)
+            connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}"
+
             self.engine = create_engine(
                 connection_url, 
                 pool_pre_ping=True,
-                echo=False
+                echo=False,
+                # Opcional: útil para conexões em nuvem que podem cair por inatividade
+                pool_size=5,
+                max_overflow=10
             )
+            
             # Tenta criar a fabrica de sessoes
             self.Session = sessionmaker(bind=self.engine)
             
-            # TESTE REAL: Se falhar aqui, o 'except' captura
+            # TESTE REAL: Verifica se a conexão está ativa
             with self.engine.connect() as conn:
                 self._initialized = True
-                print("--- Conexao SQLAlchemy OK! ---")
+                print("--- Conexao Supabase/PostgreSQL OK! ---")
+                
         except Exception as e:
-            self._initialized = False
-            self.Session = None # Garante que continue None para sabermos que falhou
-            print(f"ERRO DE CONEXAO: {e}")
+            self._initialized = True
+            self.Session = None 
+            print(f"ERRO DE CONEXAO NO SUPABASE: {e}")
 
     def get_session(self):
         if self.Session is None:
-            # Em vez de quebrar, retornamos None ou levantamos um erro amigavel
             return None
         return self.Session()
