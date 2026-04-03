@@ -36,7 +36,7 @@ class DatabaseConnection:
 
             # Nova URL para PostgreSQL
             # Usamos o driver padrão do Postgres (psycopg2)
-            connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}"
+            connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
 
             self.engine = create_engine(
                 connection_url, 
