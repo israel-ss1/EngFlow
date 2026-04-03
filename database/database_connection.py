@@ -39,15 +39,15 @@ class DatabaseConnection:
             #connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
             # Adicione "+psycopg2" logo após "postgresql"
             connection_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
-
-
+            
             self.engine = create_engine(
                 connection_url, 
                 pool_pre_ping=True,
                 echo=False,
-                # Opcional: útil para conexões em nuvem que podem cair por inatividade
                 pool_size=5,
-                max_overflow=10
+                max_overflow=10,
+                # ESTA LINHA ABAIXO É A CHAVE PARA O ERRO "Cannot assign requested address"
+                connect_args={"gssencmode": "disable"} 
             )
             
             # Tenta criar a fabrica de sessoes
