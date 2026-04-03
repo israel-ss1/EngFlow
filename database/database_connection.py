@@ -69,3 +69,7 @@ class DatabaseConnection:
         if self.Session is None:
             return None
         return self.Session()
+    
+# No final do arquivo database_connection.py
+db_instance = DatabaseConnection()
+engine = db_instance.engine  # Isso expõe a variável para outros arquivos
