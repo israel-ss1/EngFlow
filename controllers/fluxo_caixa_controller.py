@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 from database.database_connection import DatabaseConnection
 from datetime import datetime
 from sqlalchemy import text

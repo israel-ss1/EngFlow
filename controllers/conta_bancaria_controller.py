@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 from database.database_connection import DatabaseConnection
 from entities.conta_bancaria import ContaBancaria
 

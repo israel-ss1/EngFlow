@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 # ALTERADO: Agora apontamos para a pasta correta
 from database.database_connection import DatabaseConnection
 from entities.centro_custo import CentroCusto

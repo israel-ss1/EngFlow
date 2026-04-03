@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 from sqlalchemy import Column, Integer, String
 from entities.base import Base
 
