@@ -44,20 +44,20 @@ class DatabaseConnection:
             
             self.Session = sessionmaker(bind=self.engine)
             
-            # Teste r·pido para validar a conex„o
+            # Teste r√°pido para validar a conex√£o
             with self.engine.connect() as conn:
                 self._initialized = True
                 
         except Exception as e:
-            # Log do erro para depuraÁ„o
-            st.error(f"Erro de conex„o no banco: {e}")
+            # Log do erro para depura√ß√£o
+            st.error(f"Erro de conex√£o no banco: {e}")
 
     def get_session(self):
         if self.Session is None:
             return None
         return self.Session()
 
-# --- EXPORTA«√O GLOBAL ---
+# --- EXPORTA√á√ÉO GLOBAL ---
 # Isso resolve o erro de "name 'engine' is not defined" nos outros arquivos
 db_inst = DatabaseConnection()
 engine = db_inst.engine
