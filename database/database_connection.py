@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from threading import Lock
-import streamlit as st
 
 class DatabaseConnection:
     _instance = None
@@ -23,43 +23,41 @@ class DatabaseConnection:
         self.Session = None
         
         try:
-            # Buscando as credenciais do st.secrets
+            # Pegando as credenciais dos Secrets do Streamlit
             creds = st.secrets["connections"]["postgresql"]
             
             user = creds["username"]     
             pwd = creds["password"]      
             host = creds["host"]        
-            port = 6543 # Porta do Pooler do Supabase
+            port = 6543 # Porta do Pooler (Transaction)
             db = creds["database"]      
 
-            # URL com driver explícito e porta correta
+            # URL com o driver psycopg2 e porta correta
             connection_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
 
             self.engine = create_engine(
                 connection_url, 
                 pool_pre_ping=True,
-                # Resolve o erro de endereço no Streamlit Cloud
+                # Resolve o erro de "Cannot assign requested address" no Cloud
                 connect_args={"gssencmode": "disable"} 
             )
             
             self.Session = sessionmaker(bind=self.engine)
             
-            # Teste de conexão rápido
+            # Teste rápido para validar a conexão
             with self.engine.connect() as conn:
                 self._initialized = True
                 
         except Exception as e:
-            # Não marcamos como inicializado para tentar novamente no próximo rerun
-            st.error(f"Erro crítico de conexão: {e}")
+            # Log do erro para depuração
+            st.error(f"Erro de conexão no banco: {e}")
 
     def get_session(self):
         if self.Session is None:
             return None
         return self.Session()
 
-# --- EXPOSIÇÃO DA VARIÁVEL ---
-# Cria a instância única (Singleton)
-db_connection = DatabaseConnection()
-
-# Expõe o engine para que os controllers possam importar
-engine = db_connection.engine
+# --- EXPORTAÇÃO GLOBAL ---
+# Isso resolve o erro de "name 'engine' is not defined" nos outros arquivos
+db_inst = DatabaseConnection()
+engine = db_inst.engine
