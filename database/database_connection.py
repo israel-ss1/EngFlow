@@ -23,31 +23,33 @@ class DatabaseConnection:
         self.Session = None
         
         try:
-            # Pega os dados dos Secrets (aqueles que você achou no Supabase)
+            # Buscando as credenciais do st.secrets
             creds = st.secrets["connections"]["postgresql"]
             
             user = creds["username"]     
             pwd = creds["password"]      
             host = creds["host"]        
-            port = 6543 # Porta do Pooler/Transaction
+            port = 6543 # Porta do Pooler do Supabase
             db = creds["database"]      
 
-            # A URL com o driver psycopg2 e a porta 6543
+            # URL com driver explícito e porta correta
             connection_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
 
             self.engine = create_engine(
                 connection_url, 
                 pool_pre_ping=True,
-                # Resolve o erro "Cannot assign requested address" no Cloud
+                # Resolve o erro de endereço no Streamlit Cloud
                 connect_args={"gssencmode": "disable"} 
             )
             
             self.Session = sessionmaker(bind=self.engine)
             
+            # Teste de conexão rápido
             with self.engine.connect() as conn:
                 self._initialized = True
                 
         except Exception as e:
+            # Não marcamos como inicializado para tentar novamente no próximo rerun
             st.error(f"Erro crítico de conexão: {e}")
 
     def get_session(self):
@@ -55,7 +57,9 @@ class DatabaseConnection:
             return None
         return self.Session()
 
-# --- ESTA PARTE É FUNDAMENTAL E FICA FORA DA CLASSE ---
-# Ela cria a variável global que os outros arquivos vão importar
+# --- EXPOSIÇÃO DA VARIÁVEL ---
+# Cria a instância única (Singleton)
 db_connection = DatabaseConnection()
+
+# Expõe o engine para que os controllers possam importar
 engine = db_connection.engine
