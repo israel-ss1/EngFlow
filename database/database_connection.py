@@ -36,7 +36,10 @@ class DatabaseConnection:
 
             # Nova URL para PostgreSQL
             # Usamos o driver padrão do Postgres (psycopg2)
-            connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
+            #connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
+            # Adicione "+psycopg2" logo após "postgresql"
+            connection_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
+
 
             self.engine = create_engine(
                 connection_url, 
@@ -58,7 +61,9 @@ class DatabaseConnection:
         except Exception as e:
             self._initialized = True
             self.Session = None 
-            print(f"ERRO DE CONEXAO NO SUPABASE: {e}")
+            # Isso vai forçar o erro a aparecer na interface do Streamlit
+            st.error(f"Erro crítico de conexão: {e}")
+
 
     def get_session(self):
         if self.Session is None:
