@@ -12,8 +12,6 @@ import streamlit as st
 
 # 2. Agora importe as views usando o caminho absoluto do pacote
 try:
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
     from views.lancamentos_view import exibir_tela_lancamentos
     from views.pessoas_view import exibir_tela_pessoas
     from views.usuarios_view import exibir_tela_usuarios
