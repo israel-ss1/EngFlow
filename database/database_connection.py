@@ -1,71 +1,49 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
+import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from threading import Lock
-import streamlit as st # Importante para ler as credenciais
 
 class DatabaseConnection:
-    _instance = None
-    _lock = Lock()
-
-    def __new__(cls):
-        with cls._lock:
-            if cls._instance is None:
-                cls._instance = super(DatabaseConnection, cls).__new__(cls)
-                cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self):
-        if self._initialized:
-            return
-            
-        # Garantir que os atributos existam mesmo se a conexao falhar
-        self.engine = None
-        self.Session = None
-        
+    """
+    Gerencia a conexão com o PostgreSQL utilizando o cache do Streamlit.
+    Ideal para o projeto EngFlow no Streamlit Cloud.
+    """
+    
+    @st.cache_resource
+    def get_engine(_self):
         try:
-            # Buscando as credenciais do .streamlit/secrets.toml
-            # Certifique-se de que o nome no TOML seja [connections.postgresql]
+            # Busca as credenciais em st.secrets["connections"]["postgresql"]
             creds = st.secrets["connections"]["postgresql"]
             
-            user = creds["username"]     # No Supabase geralmente é 'postgres'
-            pwd = creds["password"]      # Sua senha do banco
-            host = creds["host"]        # Algo como db.xxxx.supabase.co
-            port = creds["port"]        # Geralmente 5432
-            db = creds["database"]      # No Supabase é sempre 'postgres'
+            # Formata a URL para o driver psycopg2
+            connection_url = (
+                f"postgresql+psycopg2://{creds['username']}:{creds['password']}"
+                f"@{creds['host']}:{creds['port']}/{creds['database']}?sslmode=require"
+            )
 
-            # Nova URL para PostgreSQL
-            # Usamos o driver padrão do Postgres (psycopg2)
-            #connection_url = f"postgresql://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
-            # Adicione "+psycopg2" logo após "postgresql"
-            connection_url = f"postgresql+psycopg2://{user}:{pwd}@{host}:{port}/{db}?sslmode=require"
-
-
-            self.engine = create_engine(
-                connection_url, 
+            engine = create_engine(
+                connection_url,
                 pool_pre_ping=True,
-                echo=False,
-                # Opcional: útil para conexões em nuvem que podem cair por inatividade
                 pool_size=5,
                 max_overflow=10
             )
             
-            # Tenta criar a fabrica de sessoes
-            self.Session = sessionmaker(bind=self.engine)
-            
-            # TESTE REAL: Verifica se a conexão está ativa
-            with self.engine.connect() as conn:
-                self._initialized = True
-                print("--- Conexao Supabase/PostgreSQL OK! ---")
+            # Teste rápido de conexão
+            with engine.connect() as conn:
+                pass
                 
+            return engine
         except Exception as e:
-            self._initialized = True
-            self.Session = None 
-            # Isso vai forçar o erro a aparecer na interface do Streamlit
-            st.error(f"Erro crítico de conexão: {e}")
-
+            st.error(f"Erro ao conectar ao banco de dados: {e}")
+            return None
 
     def get_session(self):
-        if self.Session is None:
-            return None
-        return self.Session()
+        engine = self.get_engine()
+        if engine:
+            Session = sessionmaker(bind=engine)
+            return Session()
+        return None
+
+# Instância global para facilitar o acesso
+db_manager = DatabaseConnection()
+engine = db_manager.get_engine()
