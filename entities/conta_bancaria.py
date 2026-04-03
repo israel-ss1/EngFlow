@@ -7,5 +7,6 @@ class ContaBancaria(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     codigo = Column(String(5), nullable=False)
+    agencia = Column(String(15), nullable=False)
     numero = Column(String(15), nullable=False)
     tipo = Column(String(20))

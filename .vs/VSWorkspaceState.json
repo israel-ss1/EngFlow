@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\controllers",
+    "\\.streamlit",
     "\\database",
-    "\\entities"
+    "\\entities",
+    "\\Views"
   ],
+  "SelectedNode": "\\requirements.txt",
   "PreviewInSolutionExplorer": false
 }

@@ -6,13 +6,13 @@ class ContaBancariaController:
     def __init__(self):
         self.db = DatabaseConnection()
 
-    def criar(self, codigo, numero, tipo):
+    def criar(self, codigo, numero, tipo, agencia):
         session = self.db.get_session()
         if session is None:
             return False
             
         try:
-            nova_conta = ContaBancaria(codigo=codigo, numero=numero, tipo=tipo)
+            nova_conta = ContaBancaria(codigo=codigo, numero=numero, tipo=tipo, agencia=agencia)
             session.add(nova_conta)
             session.commit()
             return True

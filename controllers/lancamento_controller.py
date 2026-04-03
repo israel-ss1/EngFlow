@@ -11,10 +11,12 @@ class LancamentoController:
         session = self.db.get_session()
         if session is None: return False
         try:
+            print("INICIANDO TRANSACAO DE LANCAMENTO")
             # 1. Cria o objeto mestre
             novo_lancamento = Lancamento(**dados_mestre)
             session.add(novo_lancamento)
             session.flush() # Gera o ID do lancamento sem commitar ainda
+            print(f"ID gerado pelo IDENTITY: {novo_lancamento.id}")
 
             # 2. Cria os rateios vinculados ao ID gerado
             for item in lista_rateio:
@@ -26,8 +28,10 @@ class LancamentoController:
                     observacao=item.get('observacao')
                 )
                 session.add(novo_rateio)
+                print(f"Adicionando rateio: {item['valor_parcela']}")
             
             session.commit()
+            print("COMMIT EXECUTADO COM SUCESSO!")
             return True
         except Exception as e:
             session.rollback()
