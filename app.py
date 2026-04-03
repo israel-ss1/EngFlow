@@ -27,6 +27,31 @@ except ModuleNotFoundError as e:
 st.set_page_config(page_title="EngFlow - Gestão Financeira", layout="wide")
 
 def main():
+    
+    import streamlit as st
+    import sqlalchemy
+    from sqlalchemy import text
+
+    # Substitua pela sua variável de engine ou string de conexão
+    try:
+        # Teste de conexão simples
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT 1"))
+            st.success("✅ Conexão com Supabase estabelecida!")
+        
+            # Teste de leitura de uma tabela (substitua 'sua_tabela' por uma real)
+            # result = conn.execute(text("SELECT count(*) FROM sua_tabela"))
+            # st.write(f"Linhas encontradas: {result.scalar()}")
+
+    except Exception as e:
+        st.error("❌ Erro detalhado de conexão:")
+        st.code(str(e)) # Isso vai mostrar se é Timeout, Senha Errada ou Host Inexistente
+    
+        # Verificação extra de Secrets
+        if "connections" not in st.secrets:
+            st.warning("⚠️ Atenção: As 'Secrets' parecem não estar configuradas no painel do Streamlit.")
+
+
     st.sidebar.title("EngFlow v1.0")
     st.sidebar.markdown("---")
     
