@@ -12,7 +12,8 @@ import streamlit as st
 
 # 2. Agora importe as views usando o caminho absoluto do pacote
 try:
-    print("try")
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
     from views.lancamentos_view import exibir_tela_lancamentos
     from views.pessoas_view import exibir_tela_pessoas
     from views.usuarios_view import exibir_tela_usuarios
@@ -21,7 +22,7 @@ try:
     from views.centro_custo_view import exibir_tela_centro_custo
     from views.dashboard_view import exibir_tela_dashboard
 except ModuleNotFoundError as e:
-    st.error(f"Erro ao localizar módulos Israel: {e}")
+    st.error(f"Erro ao localizar módulos: {e}")
     st.stop()
 
 # Configuração da página
